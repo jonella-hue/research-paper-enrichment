@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Infinity Paper Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+html, body { margin: 0; } img { max-width: 100%; } :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* Layout follows the Infinity Research Library: top bar with Search / Browse / Shortlist, wide search field,
+   filter rail on the left, candidate cards with matching documents on the right. Dark first, light on request. */
+:root {
+  --bg: #161718; --bar: #1c1d1f; --surface: #1d1e20; --sunk: #26282b; --ink: #e8e9eb; --muted: #a3a7ad; --line: #34363a;
+  --accent: #8ab4f8; --accent-ink: #0f1d33; --accent-soft: #1f2c40; --link: #9db8ff;
+  --mark: #6b5414; --mark-ink: #fff2c7;
+  --strong: #7fd99b; --strong-bg: #1d3a26; --possible: #f2c869; --possible-bg: #3b3014; --nofit: #b2b6bc; --nofit-bg: #2b2d31;
+  --f-body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #f5f6f7; --bar: #ffffff; --surface: #ffffff; --sunk: #eef0f2; --ink: #17191c; --muted: #5d636b; --line: #dcdfe3;
+  --accent: #2a62c9; --accent-ink: #ffffff; --accent-soft: #e5edfb; --link: #2353b0;
+  --mark: #ffe08a; --mark-ink: #2a2000;
+  --strong: #1c7a43; --strong-bg: #ddf2e5; --possible: #8a5a00; --possible-bg: #faeecf; --nofit: #63686f; --nofit-bg: #eceef0;
+  color-scheme: light; } }
+:root[data-theme="light"] {
+  --bg: #f5f6f7; --bar: #ffffff; --surface: #ffffff; --sunk: #eef0f2; --ink: #17191c; --muted: #5d636b; --line: #dcdfe3;
+  --accent: #2a62c9; --accent-ink: #ffffff; --accent-soft: #e5edfb; --link: #2353b0;
+  --mark: #ffe08a; --mark-ink: #2a2000;
+  --strong: #1c7a43; --strong-bg: #ddf2e5; --possible: #8a5a00; --possible-bg: #faeecf; --nofit: #63686f; --nofit-bg: #eceef0;
+  color-scheme: light; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bar); }
+a { color: var(--link); }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bar); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; padding-block: 10px; }
+.brand { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+.brand span { font-weight: 400; color: var(--muted); }
+nav.tabs { display: flex; gap: 4px; }
+nav.tabs button { background: none; border: 0; padding: 6px 14px; border-radius: 6px; cursor: pointer; color: var(--muted); font-weight: 500; font-size: 16px; }
+nav.tabs button[aria-current="true"] { background: var(--accent-soft); color: var(--accent); }
+nav.tabs small { font-size: 12px; margin-left: 2px; }
+.totals { margin-left: auto; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+.searchbar { padding-block: 26px 4px; }
+.searchrow { display: flex; gap: 10px; }
+#q { flex: 1; min-width: 0; padding: 15px 18px; font-size: 19px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+#q:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; padding: 0 24px; font-size: 16px; }
+.hint { color: var(--muted); font-size: 13px; margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+code { font-family: var(--f-mono); font-size: 12px; background: var(--sunk); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; color: var(--ink); }
+.examples { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; font-size: 13px; color: var(--muted); }
+.examples button { font-family: var(--f-mono); font-size: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.examples button:hover { border-color: var(--accent); color: var(--accent); }
+
+.main { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 32px; padding-block: 20px 48px; }
+aside.filters { display: flex; flex-direction: column; gap: 16px; }
+.filters label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.filters select { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+.filters .reset { align-self: flex-start; font-size: 13px; }
+
+.resulthead { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; margin-bottom: 14px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 7px 16px; cursor: pointer; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.count { font-variant-numeric: tabular-nums; color: var(--muted); }
+.count b { color: var(--ink); }
+.sortbox { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+.sortbox select { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+
+.list { display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; min-width: 0; }
+.card .head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.pname { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--link); }
+.pname:hover { text-decoration: underline; }
+.fit { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 5px; white-space: nowrap; }
+.fit.Strong { color: var(--strong); background: var(--strong-bg); }
+.fit.Possible { color: var(--possible); background: var(--possible-bg); }
+.fit.No { color: var(--nofit); background: var(--nofit-bg); }
+.star { margin-left: auto; font-size: 14px; padding: 5px 12px; border-radius: 999px; }
+.star[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.meta { color: var(--muted); font-size: 15px; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 0; }
+.meta > * + *::before { content: "·"; margin: 0 10px; color: var(--line); }
+.meta b { color: var(--ink); font-weight: 600; }
+.why { font-size: 15px; margin-top: 6px; color: var(--muted); }
+.why span { color: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; font-size: 14px; color: var(--muted); }
+.chip { font-size: 13px; color: var(--accent); background: var(--accent-soft); border-radius: 5px; padding: 3px 9px; }
+.chip i { font-style: normal; opacity: .7; margin-left: 4px; font-size: 12px; }
+.docs { margin-top: 14px; display: flex; flex-direction: column; gap: 14px; border-left: 2px solid var(--line); padding-left: 16px; }
+.doc .t { font-weight: 600; text-decoration: none; color: var(--link); }
+.doc .t:hover { text-decoration: underline; }
+.badge { font-size: 12px; background: var(--sunk); border-radius: 5px; padding: 1px 7px; margin-left: 8px; color: var(--muted); white-space: nowrap; font-weight: 400; }
+.doc .dm { font-size: 13px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.doc .snip { font-size: 15px; margin-top: 4px; overflow-wrap: anywhere; }
+.doc .by { font-size: 14px; margin-top: 3px; color: var(--muted); }
+mark { background: var(--mark); color: var(--mark-ink); border-radius: 2px; padding: 0 1px; }
+.more { background: none; border: 0; color: var(--link); cursor: pointer; padding: 0; margin-top: 12px; font-size: 15px; }
+.more:hover { text-decoration: underline; }
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 28px; color: var(--muted); }
+.showmore { align-self: center; margin-top: 4px; }
+.sl-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.toast { color: var(--strong); font-size: 13px; }
+
+/* Browse */
+.browsebar { display: flex; gap: 12px; flex-wrap: wrap; padding-block: 24px 16px; }
+#bfilter { flex: 1; min-width: 0; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.group > button { width: 100%; display: flex; justify-content: space-between; gap: 12px; align-items: center; background: none; border: 0; padding: 13px 16px; cursor: pointer; text-align: left; }
+.group > button b { font-weight: 600; }
+.group > button span { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.group ul { list-style: none; margin: 0; padding: 0 16px 12px; display: flex; flex-direction: column; gap: 0; }
+.group li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.group li a { font-weight: 600; text-decoration: none; }
+.group li a:hover { text-decoration: underline; }
+.group li .r { color: var(--muted); }
+.group li .n { margin-left: auto; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.browselist { display: flex; flex-direction: column; gap: 8px; padding-bottom: 48px; }
+
+footer { color: var(--muted); font-size: 13px; padding-block: 0 40px; }
+footer p { max-width: 80ch; margin: 4px 0; }
+
+@media (max-width: 820px) {
+  .main { grid-template-columns: minmax(0, 1fr); }
+  aside.filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .totals { margin-left: 0; width: 100%; }
+}
+@media (max-width: 440px) {
+  aside.filters { grid-template-columns: minmax(0, 1fr); }
+  .btn.primary { padding: 0 14px; }
+  nav.tabs button { padding: 6px 10px; }
+}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">Infinity <span>Paper Library</span></div>
+    <nav class="tabs" aria-label="Views">
+      <button id="tab-search" aria-current="true">Search</button>
+      <button id="tab-browse" aria-current="false">Browse</button>
+      <button id="tab-short" aria-current="false">Shortlist <small id="slcount">0</small></button>
+    </nav>
+      <a href="fulltext/" style="margin-left:8px;font-size:14px;color:var(--muted)">Full Text Test →</a>
+    <div class="totals" id="totals">Loading papers…</div>
+  </div>
+</header>
+
+<div class="wrap" id="view-search">
+  <section class="searchbar">
+    <form class="searchrow" id="form" role="search">
+      <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Search paper titles, abstracts and keywords" aria-label="Search papers">
+      <button class="btn primary" type="submit">Search</button>
+    </form>
+    <div class="hint">Words must all appear (any order). <code>"exact phrase"</code> · <code>CUDA OR Triton</code> · <code>-exclude</code> · <code>quantiz*</code> for word starts. Not case-sensitive.</div>
+    <div class="examples" id="examples">Try:</div>
+  </section>
+
+  <div class="main">
+    <aside class="filters" id="filters" aria-label="Filters"></aside>
+    <section aria-live="polite">
+      <div class="sl-actions" id="slactions" hidden>
+        <button class="btn" id="copysl">Copy shortlist for Sheets</button>
+        <button class="btn" id="clearsl">Clear shortlist</button>
+        <span class="toast" id="toast"></span>
+      </div>
+      <div class="resulthead">
+        <div class="seg" role="group" aria-label="Show">
+          <button id="mode-people" aria-pressed="true">Candidates</button>
+          <button id="mode-docs" aria-pressed="false">Documents</button>
+        </div>
+        <div class="count" id="count"></div>
+        <div class="sortbox"><label for="sort">Sort</label><select id="sort"></select></div>
+      </div>
+      <div class="list" id="list"><div class="empty">Loading papers from the two pilot sheets…</div></div>
+    </section>
+  </div>
+</div>
+
+<div class="wrap" id="view-browse" hidden>
+  <div class="browsebar">
+    <div class="seg" role="group" aria-label="Group by">
+      <button id="by-s" aria-pressed="true">By university</button>
+      <button id="by-pl" aria-pressed="false">By source group</button>
+      <button id="by-role" aria-pressed="false">By track</button>
+    </div>
+    <input id="bfilter" type="search" placeholder="Filter candidates by name, university or role…" aria-label="Filter candidates">
+  </div>
+  <div class="browselist" id="browselist"></div>
+</div>
+
+<footer class="wrap">
+  <p>Data: the two Research Paper Content pilot sheets (Nov 3, 2026). 297 candidates (about 50 per school) from Harvard, Princeton, UC Berkeley, Caltech, MIT and Stanford. Paper titles, abstracts, topics and keywords come from OpenAlex. Some Scholar-only candidates have titles without abstracts. A paper listed twice under the same title (for example a preprint and its published version) is shown once.</p>
+  <p>Fit rating and track are a first read from each person's papers, matched to the Roles tab. Shortlist is saved in this browser only.</p>
+</footer>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const EXAMPLES = ['accelerator', 'compiler', 'GPU', '"large language model"', 'quantum computing', 'reinforcement learning', 'interpretability', 'CUDA OR Triton', 'FPGA', 'quantiz*'];
+  const FIT_ORDER = { 'Strong': 0, 'Possible': 1, 'No clear fit': 2 };
+  const PAGE = 40;
+
+  let P = [], D = [];
+  const state = { q: 'accelerator', mode: 'people', view: 'search', sort: { people: 'evidence', docs: 'relevance' }, f: {}, open: new Set(), shown: PAGE, by: 's', bopen: new Set() };
+  let shortlist = new Set();
+  try { shortlist = new Set(JSON.parse(localStorage.getItem('ipl-shortlist') || '[]')); } catch (e) {}
+  const saveSL = () => { try { localStorage.setItem('ipl-shortlist', JSON.stringify([...shortlist])); } catch (e) {} $('slcount').textContent = shortlist.size; };
+
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmt = (n) => n.toLocaleString('en-US');
+  const plural = (n, w) => fmt(n) + ' ' + w + (n === 1 ? '' : 's');
+  const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // ---------- query parsing ----------
+  function makeTerm(raw, phrase) {
+    let t = raw.trim();
+    if (!phrase) t = t.replace(/^[^\p{L}\p{N}]+/u, '').replace(/[^\p{L}\p{N}*+#]+$/u, '');
+    const prefix = !phrase && t.endsWith('*');
+    const base = t.replace(/\*+$/, '');
+    if (!base) return null;
+    let src = reEsc(base);
+    if (phrase) src = src.replace(/\s+/g, '[\\s\\-]+');
+    const pre = '(?<![\\p{L}\\p{N}])';
+    src = prefix ? pre + src + '[\\p{L}\\p{N}]*' : pre + src + '(?:s|es)?(?![\\p{L}\\p{N}])';
+    return { label: phrase ? '"' + base + '"' : (prefix ? base + '*' : base), re: new RegExp(src, 'giu') };
+  }
+  function parse(q) {
+    const toks = []; const rx = /(-?)"([^"]+)"|(\S+)/g; let m;
+    while ((m = rx.exec(q))) {
+      if (m[2] !== undefined) { toks.push({ neg: !!m[1], text: m[2], phrase: true }); continue; }
+      let t = m[3];
+      if (t === 'OR' || t === '|') { toks.push({ or: true }); continue; }
+      let neg = false;
+      if (t.length > 1 && t.startsWith('-')) { neg = true; t = t.slice(1); }
+      toks.push({ neg, text: t, phrase: false });
+    }
+    const groups = [], excl = []; let orNext = false;
+    for (const tk of toks) {
+      if (tk.or) { orNext = true; continue; }
+      const term = makeTerm(tk.text, tk.phrase);
+      if (!term) { orNext = false; continue; }
+      if (tk.neg) excl.push(term);
+      else if (orNext && groups.length) groups[groups.length - 1].push(term);
+      else groups.push([term]);
+      orNext = false;
+    }
+    return { groups, excl, terms: groups.flat() };
+  }
+  const countIn = (re, s) => { re.lastIndex = 0; const m = s.match(re); return m ? m.length : 0; };
+
+  // ---------- data ----------
+  function platform(venue, type) {
+    const v = (venue || '').toLowerCase();
+    if (/arxiv|biorxiv|medrxiv|chemrxiv|ssrn|research square|preprints|techrxiv|openreview/.test(v) || type === 'preprint') return 'Preprint server';
+    if (/proceedings|conference|symposium|workshop|neurips|icml|iclr|\bacl\b|emnlp|cvpr|iccv|eccv|isca|micro|asplos|hpca|dac\b/.test(v)) return 'Conference';
+    if (!v) return 'Not listed';
+    if (/book|press|springer/.test(v) || /book/.test(type || '')) return 'Book / chapter';
+    return 'Journal';
+  }
+  function prep(data) {
+    P = data.people.map((p, i) => ({ ...p, i, docs: [], track: p.role || 'No role suggested' }));
+    D = data.papers.map((r, i) => {
+      const d = { i, p: P[r[0]], title: r[1] || '', year: r[2] || 0, venue: r[3] || '', type: r[4] || 'other', cites: r[5] || 0, co: r[6] || '', topics: r[7] || '', kw: r[8] || '', abs: r[9] || '', link: r[10] || '', src: r[11] || '' };
+      d.text = [d.title, d.abs, d.kw, d.topics, d.venue].join(' ¶ ');
+      d.plat = platform(d.venue, d.type);
+      P[r[0]].docs.push(d);
+      return d;
+    });
+    P.forEach((p) => { p.cites = p.docs.reduce((a, d) => a + d.cites, 0); });
+    $('totals').textContent = fmt(D.length) + ' documents · ' + fmt(P.length) + ' candidates';
+  }
+
+  // ---------- filters ----------
+  const FACETS = [
+    { key: 'fit', label: 'Fit rating (research team)', get: (d) => d.p.fit, order: (a, b) => FIT_ORDER[a] - FIT_ORDER[b] },
+    { key: 'track', label: 'Track', get: (d) => d.p.track },
+    { key: 's', label: 'University', get: (d) => d.p.s },
+    { key: 'who', label: 'Candidate / author', get: (d) => d.p.n, order: (a, b) => a.localeCompare(b) },
+    { key: 'plat', label: 'Publishing platform', get: (d) => d.plat },
+    { key: 'type', label: 'Content type', get: (d) => d.type },
+    { key: 'year', label: 'Publication year', get: (d) => d.year ? String(d.year) : 'Unknown', order: (a, b) => (+b || 0) - (+a || 0) },
+    { key: 'pl', label: 'Source group', get: (d) => d.p.pl },
+  ];
+  const passes = (d, except) => FACETS.every((f) => f.key === except || !state.f[f.key] || f.get(d) === state.f[f.key]);
+
+  function renderFilters(matched) {
+    const html = FACETS.map((f) => {
+      const counts = new Map(); const seen = new Set(); const all = new Set(); let totalDocs = 0;
+      for (const { d } of matched) {
+        if (!passes(d, f.key)) continue;
+        totalDocs++; all.add(d.p.i);
+        const v = f.get(d);
+        if (state.mode === 'people') { const k = v + '\u0000' + d.p.i; if (seen.has(k)) continue; seen.add(k); }
+        counts.set(v, (counts.get(v) || 0) + 1);
+      }
+      const total = state.mode === 'people' ? all.size : totalDocs;
+      const cur = state.f[f.key] || '';
+      if (cur && !counts.has(cur)) counts.set(cur, 0);
+      const vals = [...counts.keys()].sort(f.order || ((a, b) => counts.get(b) - counts.get(a) || a.localeCompare(b)));
+      return `<div><label for="f-${f.key}">${esc(f.label)}</label><select id="f-${f.key}" data-k="${f.key}"><option value="">All (${fmt(total)})</option>${vals.map((v) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(v)} (${fmt(counts.get(v))})</option>`).join('')}</select></div>`;
+    }).join('');
+    $('filters').innerHTML = html + (Object.values(state.f).some(Boolean) ? '<button class="btn reset" id="resetf">Clear filters</button>' : '');
+  }
+
+  // ---------- search ----------
+  function run() {
+    if (state.view === 'browse') { renderBrowse(); return; }
+    const t0 = performance.now();
+    const Q = parse(state.q);
+    const has = Q.groups.length > 0;
+    const matched = [];
+    for (const d of D) {
+      if (state.view === 'short' && !shortlist.has(d.p.k)) continue;
+      let ok = true; const counts = [];
+      for (const g of Q.groups) {
+        let s = 0; for (const t of g) { const c = countIn(t.re, d.text); counts.push(c); s += c; }
+        if (!s) { ok = false; break; }
+      }
+      if (!ok) continue;
+      if (Q.excl.some((t) => countIn(t.re, d.text) > 0)) continue;
+      const titleHits = has ? Q.terms.reduce((a, t) => a + countIn(t.re, d.title), 0) : 0;
+      const hits = counts.reduce((a, b) => a + b, 0);
+      matched.push({ d, counts, hits, score: hits + 3 * titleHits });
+    }
+    const rows = matched.filter(({ d }) => passes(d));
+    const ms = Math.max(1, Math.round(performance.now() - t0));
+    renderFilters(matched);
+    if (state.mode === 'people') renderPeople(rows, Q, has, ms); else renderDocs(rows, Q, has, ms);
+  }
+
+  function bigRe(Q, flags) { return new RegExp(Q.terms.map((t) => t.re.source).join('|'), flags); }
+  function highlight(text, Q) {
+    if (!Q.terms.length || !text) return esc(text);
+    const big = bigRe(Q, 'giu');
+    let out = '', last = 0; let m;
+    while ((m = big.exec(text))) { if (!m[0]) { big.lastIndex++; continue; } out += esc(text.slice(last, m.index)) + '<mark>' + esc(m[0]) + '</mark>'; last = m.index + m[0].length; }
+    return out + esc(text.slice(last));
+  }
+  function snippet(d, Q) {
+    const src = d.abs || '';
+    if (!Q.terms.length) return src ? esc(src.slice(0, 260)) + (src.length > 260 ? ' …' : '') : '';
+    const m = src ? bigRe(Q, 'iu').exec(src) : null;
+    if (m) {
+      const a = Math.max(0, m.index - 110), b = Math.min(src.length, m.index + 230);
+      return (a > 0 ? '… ' : '') + highlight(src.slice(a, b), Q) + (b < src.length ? ' …' : '');
+    }
+    const parts = [d.kw, d.topics, d.venue].filter(Boolean);
+    const hit = parts.find((x) => bigRe(Q, 'iu').test(x));
+    if (hit) return '… ' + highlight(parts.join(' ¶ '), Q) + ' …';
+    return src ? esc(src.slice(0, 220)) + ' …' : '';
+  }
+  const fitChip = (fit) => `<span class="fit ${fit.split(' ')[0]}">${esc(fit === 'No clear fit' ? 'No clear fit' : fit + ' fit')}</span>`;
+  function docHTML(d, Q, showBy) {
+    const sn = snippet(d, Q);
+    const title = `${highlight(d.title, Q)} · ${esc(d.p.n)}`;
+    return `<div class="doc">
+      ${d.link ? `<a class="t" href="${esc(d.link)}" target="_blank" rel="noopener">${title}</a>` : `<span class="t">${title}</span>`}<span class="badge">${esc(d.plat)} / ${esc(d.type)}</span>
+      <div class="dm">${d.year || 'n.d.'}${d.venue ? ' · ' + esc(d.venue) : ''} · ${plural(d.cites, 'citation')}${d.abs ? '' : ' · title only'}</div>
+      ${showBy ? `<div class="by">${fitChip(d.p.fit)} ${esc(d.p.track)} · ${esc(d.p.s)}</div>` : ''}
+      ${sn ? `<div class="snip">${sn}</div>` : ''}
+    </div>`;
+  }
+
+  function renderPeople(rows, Q, has, ms) {
+    const by = new Map();
+    for (const r of rows) {
+      let g = by.get(r.d.p.i);
+      if (!g) { g = { p: r.d.p, rows: [], hits: 0, termDocs: new Array(Q.terms.length).fill(0) }; by.set(r.d.p.i, g); }
+      g.rows.push(r); g.hits += r.hits; r.counts.forEach((c, j) => { if (c) g.termDocs[j]++; });
+    }
+    const groups = [...by.values()];
+    const s = state.sort.people;
+    const fitCmp = (a, b) => FIT_ORDER[a.p.fit] - FIT_ORDER[b.p.fit];
+    const covered = (g) => g.termDocs.filter(Boolean).length;
+    const ev = (a, b) => covered(b) - covered(a) || b.rows.length - a.rows.length || b.hits - a.hits;
+    groups.sort(s === 'fit' ? (a, b) => fitCmp(a, b) || ev(a, b) : s === 'cites' ? (a, b) => b.p.cites - a.p.cites : s === 'name' ? (a, b) => a.p.n.localeCompare(b.p.n) : (a, b) => ev(a, b) || fitCmp(a, b));
+    groups.forEach((g) => g.rows.sort((a, b) => b.score - a.score || b.d.cites - a.d.cites));
+    $('count').innerHTML = `<b>${plural(groups.length, 'candidate')}</b> · ${plural(rows.length, 'matching document')} · ${ms} ms`;
+    if (!groups.length) { $('list').innerHTML = emptyMsg(); return; }
+    $('list').innerHTML = groups.slice(0, state.shown).map((g) => {
+      const p = g.p; const open = state.open.has(p.i); const n = open ? g.rows.length : 3;
+      const chips = has
+        ? Q.terms.map((t, j) => `<span class="chip">✓ ${esc(t.label)}<i>${g.termDocs[j]}</i></span>`).join('') + `<span>${fmt(g.rows.length)} of their own ${g.rows.length === 1 && p.docs.length === 1 ? 'paper matches' : 'papers match'}</span>`
+        : `<span>${plural(p.docs.length, 'paper')} collected · ${plural(p.cites, 'citation')}</span>`;
+      const link = p.oa || p.sch;
+      return `<article class="card">
+        <div class="head">
+          ${link ? `<a class="pname" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.n)}</a>` : `<span class="pname">${esc(p.n)}</span>`}
+          ${fitChip(p.fit)}
+          <button class="btn star" data-star="${esc(p.k)}" aria-pressed="${shortlist.has(p.k)}">${shortlist.has(p.k) ? '★ Shortlisted' : '☆ Shortlist'}</button>
+        </div>
+        <div class="meta"><b>${esc(p.track)}</b><span>${esc(p.s)}</span><span>${esc(p.d)}${p.pr ? ', ' + esc(p.pr) : ''}</span><span>${esc(p.pl)}</span>${p.oa ? `<a href="${esc(p.oa)}" target="_blank" rel="noopener">OpenAlex</a>` : ''}${p.sch ? `<a href="${esc(p.sch)}" target="_blank" rel="noopener">Scholar</a>` : ''}</div>
+        <div class="why">Research team: <span>${esc(p.why)}</span></div>
+        <div class="chips">${chips}</div>
+        <div class="docs">${g.rows.slice(0, n).map((r) => docHTML(r.d, Q, false)).join('')}</div>
+        ${g.rows.length > 3 ? `<button class="more" data-open="${p.i}">${open ? 'Show fewer documents' : '+ ' + plural(g.rows.length - 3, 'more matching document')}</button>` : ''}
+      </article>`;
+    }).join('') + (groups.length > state.shown ? `<button class="btn showmore" id="showmore">Show ${Math.min(PAGE, groups.length - state.shown)} more candidates</button>` : '');
+  }
+
+  function renderDocs(rows, Q, has, ms) {
+    const s = state.sort.docs;
+    rows.sort(s === 'newest' ? (a, b) => b.d.year - a.d.year || b.score - a.score : s === 'cites' ? (a, b) => b.d.cites - a.d.cites : (a, b) => b.score - a.score || b.d.cites - a.d.cites);
+    const people = new Set(rows.map((r) => r.d.p.i)).size;
+    $('count').innerHTML = `<b>${plural(rows.length, 'document')}</b> · from ${plural(people, 'candidate')} · ${ms} ms`;
+    if (!rows.length) { $('list').innerHTML = emptyMsg(); return; }
+    $('list').innerHTML = rows.slice(0, state.shown).map((r) => `<article class="card">${docHTML(r.d, Q, true)}</article>`).join('') +
+      (rows.length > state.shown ? `<button class="btn showmore" id="showmore">Show ${Math.min(PAGE, rows.length - state.shown)} more documents</button>` : '');
+  }
+
+  function emptyMsg() {
+    if (state.view === 'short' && !shortlist.size) return '<div class="empty">Your shortlist is empty. Search for a topic, then press ☆ Shortlist on a candidate to keep them here.</div>';
+    return '<div class="empty">No matches. Try fewer words, a word start like <code>quantiz*</code>, or clear the filters.</div>';
+  }
+
+  // ---------- browse ----------
+  function renderBrowse() {
+    const key = state.by; const term = $('bfilter').value.trim().toLowerCase();
+    const groups = new Map();
+    for (const p of P) {
+      if (term && ![p.n, p.s, p.track, p.pr].join(' ').toLowerCase().includes(term)) continue;
+      const g = key === 's' ? p.s : key === 'pl' ? p.pl : p.track;
+      if (!groups.has(g)) groups.set(g, []);
+      groups.get(g).push(p);
+    }
+    const names = [...groups.keys()].sort((a, b) => key === 'role' ? groups.get(b).length - groups.get(a).length : a.localeCompare(b));
+    if (!names.length) { $('browselist').innerHTML = '<div class="empty">No candidates match that filter.</div>'; return; }
+    $('browselist').innerHTML = names.map((g) => {
+      const ps = groups.get(g).sort((a, b) => FIT_ORDER[a.fit] - FIT_ORDER[b.fit] || a.n.localeCompare(b.n));
+      const docs = ps.reduce((a, p) => a + p.docs.length, 0);
+      const open = state.bopen.has(key + g) || !!term;
+      return `<div class="group"><button data-bg="${esc(key + g)}" aria-expanded="${open}"><b>${esc(g)}</b><span>${plural(ps.length, 'candidate')} · ${plural(docs, 'document')}</span></button>
+        ${open ? `<ul>${ps.map((p) => `<li><a href="#" data-goto="${p.i}">${esc(p.n)}</a>${fitChip(p.fit)}<span class="r">${esc(p.track)} · ${esc(p.s)}</span><span class="n">${plural(p.docs.length, 'document')}</span></li>`).join('')}</ul>` : ''}</div>`;
+    }).join('');
+  }
+
+  // ---------- views ----------
+  function setSortOptions() {
+    const opts = state.mode === 'people'
+      ? [['evidence', 'Evidence (terms covered)'], ['fit', 'Fit rating'], ['name', 'Candidate A–Z'], ['cites', 'Total citations']]
+      : [['relevance', 'Relevance'], ['newest', 'Newest'], ['cites', 'Most cited']];
+    $('sort').innerHTML = opts.map(([v, l]) => `<option value="${v}"${state.sort[state.mode] === v ? ' selected' : ''}>${l}</option>`).join('');
+  }
+  function setMode(m) { state.mode = m; state.shown = PAGE; $('mode-people').setAttribute('aria-pressed', m === 'people'); $('mode-docs').setAttribute('aria-pressed', m === 'docs'); setSortOptions(); run(); }
+  function setView(v) {
+    const prev = state.view; state.view = v; state.shown = PAGE;
+    for (const [id, name] of [['tab-search', 'search'], ['tab-browse', 'browse'], ['tab-short', 'short']]) $(id).setAttribute('aria-current', v === name);
+    $('view-search').hidden = v === 'browse'; $('view-browse').hidden = v !== 'browse';
+    $('slactions').hidden = v !== 'short';
+    document.querySelector('.searchbar').hidden = v === 'short';
+    if (v === 'short' && prev !== 'short') { state._q = state.q; state._f = state.f; state.q = ''; state.f = {}; }
+    if (v !== 'short' && prev === 'short') { state.q = state._q ?? state.q; state.f = state._f ?? {}; }
+    $('q').value = state.q;
+    if (v === 'short') setMode('people'); else run();
+    window.scrollTo(0, 0);
+  }
+  function search(q) { state.q = q; $('q').value = q; state.shown = PAGE; state.open.clear(); if (state.view !== 'search') setView('search'); else run(); }
+
+  // ---------- events ----------
+  let timer;
+  $('q').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => search($('q').value), 220); });
+  $('form').addEventListener('submit', (e) => { e.preventDefault(); clearTimeout(timer); search($('q').value); });
+  $('examples').innerHTML = 'Try:' + EXAMPLES.map((x) => `<button type="button" data-ex="${esc(x)}">${esc(x)}</button>`).join('');
+  $('examples').addEventListener('click', (e) => { const b = e.target.closest('[data-ex]'); if (b) search(b.dataset.ex); });
+  $('filters').addEventListener('change', (e) => { const k = e.target.dataset.k; if (!k) return; state.f[k] = e.target.value; state.shown = PAGE; run(); });
+  $('filters').addEventListener('click', (e) => { if (e.target.id === 'resetf') { state.f = {}; run(); } });
+  $('sort').addEventListener('change', (e) => { state.sort[state.mode] = e.target.value; run(); });
+  $('mode-people').addEventListener('click', () => setMode('people'));
+  $('mode-docs').addEventListener('click', () => setMode('docs'));
+  $('tab-search').addEventListener('click', () => setView('search'));
+  $('tab-browse').addEventListener('click', () => setView('browse'));
+  $('tab-short').addEventListener('click', () => setView('short'));
+  for (const k of ['s', 'pl', 'role']) $('by-' + k).addEventListener('click', () => { state.by = k; for (const j of ['s', 'pl', 'role']) $('by-' + j).setAttribute('aria-pressed', j === k); renderBrowse(); });
+  $('bfilter').addEventListener('input', renderBrowse);
+  $('browselist').addEventListener('click', (e) => {
+    const go = e.target.closest('[data-goto]');
+    if (go) { e.preventDefault(); const p = P[+go.dataset.goto]; state.f = { who: p.n }; state.q = ''; setView('search'); return; }
+    const b = e.target.closest('[data-bg]');
+    if (b) { const k = b.dataset.bg; state.bopen.has(k) ? state.bopen.delete(k) : state.bopen.add(k); renderBrowse(); }
+  });
+  $('list').addEventListener('click', (e) => {
+    const st = e.target.closest('[data-star]');
+    if (st) { const k = st.dataset.star; shortlist.has(k) ? shortlist.delete(k) : shortlist.add(k); saveSL(); run(); return; }
+    const op = e.target.closest('[data-open]');
+    if (op) { const i = +op.dataset.open; state.open.has(i) ? state.open.delete(i) : state.open.add(i); run(); return; }
+    if (e.target.id === 'showmore') { state.shown += PAGE; run(); }
+  });
+  $('copysl').addEventListener('click', async () => {
+    const rows = [['Full Name', 'School', 'Program / Major', 'Degree Level', 'Infinity Fit', 'Possible Role at Infinity', 'Why (based on their papers)', 'OpenAlex Profile', 'Scholar Profile']]
+      .concat(P.filter((p) => shortlist.has(p.k)).map((p) => [p.n, p.s, p.pr, p.d, p.fit, p.role, p.why, p.oa, p.sch]));
+    const tsv = rows.map((r) => r.map((c) => String(c || '').replace(/[\t\n]/g, ' ')).join('\t')).join('\n');
+    try { await navigator.clipboard.writeText(tsv); $('toast').textContent = 'Copied ' + plural(rows.length - 1, 'candidate') + '. Paste into a sheet.'; }
+    catch (err) { $('toast').textContent = 'Copy was blocked here. Select the names on the page and copy them instead.'; }
+  });
+  $('clearsl').addEventListener('click', () => { shortlist.clear(); saveSL(); run(); });
+
+  saveSL();
+  $('q').value = state.q;
+  setSortOptions();
+  fetch('data.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).then((data) => { prep(data); run(); })
+    .catch(() => { $('list').innerHTML = '<div class="empty">The paper data did not load. Reload the page to try again.</div>'; $('totals').textContent = ''; });
+})();
+</script>
+
+</body>
+</html>
