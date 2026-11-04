@@ -1,10 +1,11 @@
-# Infinity Paper Library
+# Research Paper Content Enrichment
 
 Research Paper Content Enrichment, by Jonella (Infinity operations). Tests of making the actual written content of graduates' research papers searchable by topic or keyword, not just their Google Scholar or OpenAlex profile links.
 
-**Live pages**
-- Paper Library: search titles, abstracts and keywords of 4,073 papers from 297 graduate candidates (`index.html`)
-- Full Text Test: search inside the full text of 125 papers from 21 tech candidates, compared with searching summaries only (`fulltext/index.html`)
+**Live pages**: [Paper search](https://jonella-hue.github.io/research-paper-enrichment/) · [Full Text Test](https://jonella-hue.github.io/research-paper-enrichment/fulltext.html)
+
+- Paper search: search titles, abstracts and keywords of 4,073 papers from 297 graduate candidates (`index.html`)
+- Full Text Test: search inside the full text of 125 papers from 21 tech candidates, compared with searching summaries only (`fulltext.html`)
 
 The layout and search rules follow Eloisa's [Infinity Research Library](https://eloisa-cpu.github.io/infinity-research-library-v2/), so the two can be combined later.
 
@@ -14,7 +15,7 @@ The layout and search rules follow Eloisa's [Infinity Research Library](https://
 |---|---|---|---|
 | Pilot 1 (mixed departments) | 150 | 2,479 | Titles, abstracts, topics, keywords |
 | Pilot 2 (CS, EE, Physics only) | 150 | 1,808 | Titles, abstracts, topics, keywords |
-| Paper Library (both pilots, duplicates merged) | 297 | 4,073 | Titles, abstracts, topics, keywords |
+| Paper search (both pilots, duplicates merged) | 297 | 4,073 | Titles, abstracts, topics, keywords |
 | Full Text Test (from Pilot 2) | 21 | 125 | Whole paper, split into ~130-word passages with page numbers |
 
 Schools: Harvard, Princeton, UC Berkeley, Caltech, MIT, Stanford (about 25 per school per pilot).
@@ -48,9 +49,9 @@ Some full-text matches are passing mentions (for example a thank-you note), so t
 
 ## Files
 
-- `index.html`, `data.json`: Paper Library page and its data
-- `fulltext/index.html`, `fulltext/ft_data.json`: Full Text Test page and its data
-- `scripts/`: Python scripts used to pick people, pull OpenAlex data, assign fit and role, download PDFs and extract text
+- `index.html`, `data.json`: Paper search page and its data
+- `fulltext.html`, `ft_data.json`: Full Text Test page and its data
+- `scripts.zip`: Python scripts used to pick people, pull OpenAlex data, assign fit and role, download PDFs and extract text
   - `pick2.py`, `fetch2.py`, `build2.py`, `role_map.py`, `role_map2.py`: pilot data and fit ratings
   - `build_data.py`: merges both pilots into `data.json`
   - `pick_ft.py`, `download.py`, `extract.py`: full-text test (also builds a SQLite full-text database)
